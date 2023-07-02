@@ -1,0 +1,195 @@
+import java.util.Scanner;
+//Thiago Jung Morais
+public class TrabalhoFinal {
+    public static void main(String[] args) {
+        TrabalhoFinal novo = new TrabalhoFinal();
+    }
+    public TrabalhoFinal() {
+        Scanner t = new Scanner(System.in);
+        boolean reiniciar = true;
+
+        while (reiniciar) {
+            char[][] tabuleiro = new char[6][7];
+            criarTabuleiro(tabuleiro);
+            boolean jogador1 = true;
+            boolean vitoria = false;
+            char cor = escolha(t);
+            while (!vitoria) {
+                exibirTabuleiro(tabuleiro);
+                if (jogador1) {
+                    System.out.println("Jogador, faça sua jogada (coluna de 1 a 7):");
+                    int coluna = t.nextInt();
+                    if (coluna < 1 || coluna > 7) {
+                        while (coluna < 1 || coluna > 7) {
+                            System.out.println("coluna inválida. Digite apenas entre 1 e 7");
+                            coluna = t.nextInt();
+                        }
+                    }
+                    realizarJogada(tabuleiro, coluna, cor, t);
+                } else {
+                    System.out.println("Computador está fazendo sua jogada...");
+                    int coluna = obterJogadaComputador(tabuleiro);
+                    realizarJogadaPC(tabuleiro, coluna, (cor == 'A') ? 'V' : 'A', t);
+                }
+
+                vitoria = verificarVitoria(tabuleiro);
+
+                if (vitoria) {
+                    exibirTabuleiro(tabuleiro);
+                    if (jogador1) {
+                        System.out.println("Você venceu!");
+                    } else {
+                        System.out.println("O computador venceu!");
+                    }
+                } else if (tabuleiroCompleto(tabuleiro)) {
+                    exibirTabuleiro(tabuleiro);
+                    System.out.println("Empate!");
+                    break;
+                }
+                jogador1 = !jogador1;
+            }
+            reiniciar = reiniciar(t);
+        }
+        t.close();
+    }
+    public char escolha(Scanner t) {
+        System.out.println("Escolha entre a cor vermelho (V) ou azul (A)");
+        while (true) {
+            String escolha = t.nextLine();
+            if (escolha.equalsIgnoreCase("V")) {
+                return 'V';
+            } else if (escolha.equalsIgnoreCase("A")) {
+                return 'A';
+            } else {
+                System.out.println("Escolha inválida, digite novamente");
+            }
+        }
+    }
+    public boolean reiniciar(Scanner t) {
+        System.out.println("Deseja jogar novamente? Digite sim ou não");
+        t.nextLine();
+        String resposta = t.nextLine();
+        while (!resposta.equalsIgnoreCase("sim") && !resposta.equalsIgnoreCase("nao")) {
+            System.out.println("Resposta inválida, digite novamente");
+            resposta = t.nextLine();
+        }
+        return resposta.equalsIgnoreCase("sim");
+    }
+    public void criarTabuleiro(char[][] tabuleiro) {
+        for (int i = 0; i < tabuleiro.length; i++) {
+            for (int j = 0; j < tabuleiro[i].length; j++) {
+                tabuleiro[i][j] = 'B';
+            }
+        }
+    }
+    public void exibirTabuleiro(char[][] tabuleiro) {
+        System.out.println("0   1   2   3   4   5   6   7");
+        for (int i = 0; i < tabuleiro.length; i++) {
+            System.out.print((i + 1) + " ");
+            for (int j = 0; j < tabuleiro[i].length; j++) {
+                if (j == 0) {
+                    System.out.print("|"); // Início da linha
+                }
+                System.out.print(" " + tabuleiro[i][j]); // Espaço entre as colunas
+                System.out.print(" |"); // Fim da coluna
+            }
+            System.out.println(); // Pula para a próxima linha
+        }
+        System.out.println("---------------------");
+    }
+    public void realizarJogada(char[][] tabuleiro, int coluna, char cor, Scanner t) {
+        int linha = tabuleiro.length - 1;
+        coluna = coluna - 1;
+        while (linha >= 0) {
+            while (!colunaValida(tabuleiro, coluna)) {
+                System.out.println("Coluna preenchida, jogue novamente!");
+                coluna = t.nextInt();
+                coluna = coluna - 1;
+            }
+            if (tabuleiro[linha][coluna] == 'B') {
+                tabuleiro[linha][coluna] = cor;
+                break;
+            }
+
+            linha--;
+        }
+    }
+    public void realizarJogadaPC(char[][] tabuleiro, int coluna, char cor, Scanner t) {
+        int linha = tabuleiro.length - 1;
+        while (linha >= 0) {
+            while (!colunaValida(tabuleiro, coluna)) {
+                System.out.println("Coluna preenchida, jogue novamente!");
+                coluna = t.nextInt();
+            }
+            if (tabuleiro[linha][coluna] == 'B') {
+                tabuleiro[linha][coluna] = cor;
+                break;
+            }
+            linha--;
+        }
+    }
+    public boolean verificarVitoria(char[][] tabuleiro) {
+        // Verificar horizontalmente
+        for (int i = 0; i < tabuleiro.length; i++) {
+            for (int j = 0; j < tabuleiro[i].length - 3; j++) {
+                char peca = tabuleiro[i][j];
+                if (peca != 'B' && peca == tabuleiro[i][j + 1] && peca == tabuleiro[i][j + 2]
+                        && peca == tabuleiro[i][j + 3]) {
+                    return true;
+                }
+            }
+        }
+        // Verificar verticalmente
+        for (int i = 0; i < tabuleiro.length - 3; i++) {
+            for (int j = 0; j < tabuleiro[i].length; j++) {
+                char peca = tabuleiro[i][j];
+                if (peca != 'B' && peca == tabuleiro[i + 1][j] && peca == tabuleiro[i + 2][j]
+                        && peca == tabuleiro[i + 3][j]) {
+                    return true;
+                }
+            }
+        }
+        // Verificar diagonalmente (esquerda para cima)
+        for (int i = 3; i < tabuleiro.length; i++) {
+            for (int j = 0; j < tabuleiro[i].length - 3; j++) {
+                char peca = tabuleiro[i][j];
+                if (peca != 'B' && peca == tabuleiro[i - 1][j + 1] && peca == tabuleiro[i - 2][j + 2]
+                        && peca == tabuleiro[i - 3][j + 3]) {
+                    return true;
+                }
+            }
+        }
+        // Verificar diagonalmente (direita para cima)
+        for (int i = 3; i < tabuleiro.length; i++) {
+            for (int j = 3; j < tabuleiro[i].length; j++) {
+                char peca = tabuleiro[i][j];
+                if (peca != 'B' && peca == tabuleiro[i - 1][j - 1] && peca == tabuleiro[i - 2][j - 2]
+                        && peca == tabuleiro[i - 3][j - 3]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public boolean tabuleiroCompleto(char[][] tabuleiro) {
+        for (int i = 0; i < tabuleiro.length; i++) {
+            for (int j = 0; j < tabuleiro[i].length; j++) {
+                if (tabuleiro[i][j] == 'B') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public int obterJogadaComputador(char[][] tabuleiro) {
+        int coluna;
+        do {
+            coluna = (int) (Math.random() * 7);
+        } while (!colunaValida(tabuleiro, coluna));
+
+        return coluna;
+    }
+    public boolean colunaValida(char[][] tabuleiro, int coluna) {
+        return tabuleiro[0][coluna] == 'B';
+    }
+}
